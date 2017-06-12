@@ -18,12 +18,13 @@
 #### Components
   * Create 'Components' folder;
   * Generate the following components (ng g c <component-name>):
-    * home;
-    * listings;
-    * navbar;
-    * listing;
-    * add-listing;
-    * edit-listing
+  * home;
+  * listings;
+  * navbar;
+  * listing;
+  * add-listing;
+  * edit-listing
+End of components
 
 #### Routing // TODO: Refactor for external file
   * Import { RouterModule, Routes } from '@angular/router' to app.module.ts;
@@ -34,6 +35,7 @@
   ]; right before @ngModule;
   * Create <router-outlet></router-outlet> on app.component.html;
   * Open localhost:4200 and test url for home ('') and listings (/listings);
+End of Routing
 
 #### Appearance
   * app.component.html should look like this:
@@ -102,4 +104,86 @@
   * Include { path: 'add-listing', component: AddListingComponent } to appRoutes;
 
 
-### 2 - AngularFire2 Setup:
+
+## 2 - AngularFire2 Setup:
+
+#### Create environment variables
+  * The /src/environments/environment.ts file should look like this:
+    ```
+      firebase: {
+        apiKey: '<your-key>',
+        authDomain: '<your-project-authdomain>',
+        databaseURL: '<your-database-URL>',
+        projectId: '<your-project-id>',
+        storageBucket: '<your-storage-bucket>',
+        messagingSenderId: '<your-messaging-sender-id>'
+      }
+    ```
+  * Import AngularFireModule and environment vars to app.module.ts;
+  * Setup AngularFireModule under imports (AngularFireModule.initializeApp(environment.firebase));
+  * Import AngularFireDatabaseModule to app.module.ts (from version 4 onwards we need to import modules separately like database and Auth);
+  * If an error pops-up (can't resolve promise polyfill): npm install promise-polyfill --save-exact
+-
+
+#### Generate service and implement
+  * Generate a Service in /app/services named as firebase;
+  * Import service to app.module.ts;
+  * firebase.service.ts should look like this:
+    ```
+      import { Injectable } from '@angular/core';
+
+      import { AngularFireDatabase, FirebaseListObservable } from 'angularfire2/database';
+
+      @Injectable()
+      export class FirebaseService {
+
+        listings: FirebaseListObservable<any[]>;
+
+        constructor(private db: AngularFireDatabase) { }
+
+        getListings() {
+          this.listings = this.db.list('/listings') as FirebaseListObservable<Listing[]>;
+          return this.listings;
+        }
+
+      }
+
+      interface Listing {
+        $key?: string;
+        $title?: string;
+        $type?: string;
+        $image?: string;
+        $city?: string;
+        $owner?: string;
+        $bedrooms?: string;
+      }
+    ```
+  * listings.component.ts should look like this:
+    ```
+    import { FirebaseService } from './../../services/firebase.service';
+    import { Component, OnInit } from '@angular/core';
+
+    @Component({
+      selector: 'app-listings',
+      templateUrl: './listings.component.html',
+      styleUrls: ['./listings.component.css']
+    })
+    export class ListingsComponent implements OnInit {
+
+      listings: any;
+
+      constructor(private db: FirebaseService) { }
+
+      ngOnInit() {
+        this.db.getListings()
+          .subscribe(listings => {
+            this.listings = listings;
+            console.log(listings);
+          })
+      }
+
+    }
+    ```
+-
+
+### 3 - Firebase Authentication:

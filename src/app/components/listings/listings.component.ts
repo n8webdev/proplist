@@ -1,3 +1,4 @@
+import { FirebaseService } from './../../services/firebase.service';
 import { Component, OnInit } from '@angular/core';
 
 @Component({
@@ -7,9 +8,16 @@ import { Component, OnInit } from '@angular/core';
 })
 export class ListingsComponent implements OnInit {
 
-  constructor() { }
+  listings: any;
+
+  constructor(private db: FirebaseService) { }
 
   ngOnInit() {
+    this.db.getListings()
+      .subscribe(listings => {
+        this.listings = listings;
+        console.log(listings);
+      })
   }
 
 }
